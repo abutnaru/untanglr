@@ -1,0 +1,17 @@
+[package]
+name = "untanglr"
+version = "0.2.0"
+authors = ["Andrei BUTNARU <abutnaru@outlook.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "untanglr"
+path = "src/lib.rs"
+
+[[bin]]
+name = "untanglr"
+path = "src/bin.rs"
+
+[dependencies]
+regex = "1.5.4"
