@@ -11,7 +11,6 @@ use std::str;
 // by default), the maximum word cost and the maximum word length
 pub struct LanguageModel {
     //TODO: Add support for custom dictionaries
-    //dict: String,
     word_cost: HashMap<String, f64>,
     max_wlen: u8,
 }
@@ -19,25 +18,25 @@ pub struct LanguageModel {
 impl LanguageModel {
     // Initialize the LanguageModel using the words in the dictionary to
     // get the maximum word length and calculate word cost uzing Zipf's law
-    pub fn new() -> LanguageModel {
+    pub fn new(dict: &str) -> LanguageModel {
         //TODO: This should be able to take user's input if needed
-        let path = Path::new("dicts/english.txt");
-        let file = match File::open(&path) {
-            Err(e) => panic!("Couldn't open {}: {}", path.display(), e),
-            Ok(file) => file,
-        };
-        let buffered = BufReader::new(file);
-        let reader: Vec<_> = buffered.lines().collect();
-        let word_count: f64 = reader.len() as f64;
+        //let path = Path::new(&dict_path);
+        //let file = match File::open(&path) {
+        //    Err(e) => panic!("Couldn't open {}: {}", path.display(), e),
+        //    Ok(file) => file,
+        //};
+        //let buffered = BufReader::new(file);
+        //let reader: Vec<_> = buffered.lines().collect();
+        let word_count: f64 = dict.len() as f64;
         let mut max_wlen: u8 = 0;
         // Read the file line by line using the lines() iterator from std::io::BufRead.
         let mut word_cost: HashMap<String, f64> = HashMap::new();
-        for (index, line) in reader.into_iter().enumerate() {
-            let word = line.unwrap(); // Ignore errors.
+        for (index, line) in dict.lines().enumerate() {
+            let word = line; // Ignore errors.
             let word_len: u8 = word.chars().count() as u8;
             max_wlen = max(word_len, max_wlen);
 
-            word_cost.insert(word, ((index + 1) as f64 * word_count.ln()).ln());
+            word_cost.insert(String::from(word), ((index + 1) as f64 * word_count.ln()).ln());
         }
         //println!("{:#?}",word_cost);
         LanguageModel {
