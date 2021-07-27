@@ -2,9 +2,6 @@ extern crate regex;
 use regex::bytes::Regex;
 use std::cmp::max;
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::path::Path;
 use std::str;
 
 // The LanguageModel holds the path to the dictionary (english
@@ -18,7 +15,7 @@ pub struct LanguageModel {
 impl LanguageModel {
     // Initialize the LanguageModel using the words in the dictionary to
     // get the maximum word length and calculate word cost uzing Zipf's law
-    pub fn new(dict: &str) -> LanguageModel {
+    pub fn new() -> LanguageModel {
         //TODO: This should be able to take user's input if needed
         //let path = Path::new(&dict_path);
         //let file = match File::open(&path) {
@@ -27,6 +24,7 @@ impl LanguageModel {
         //};
         //let buffered = BufReader::new(file);
         //let reader: Vec<_> = buffered.lines().collect();
+        let dict = include_str!("dicts/english.txt");
         let word_count: f64 = dict.len() as f64;
         let mut max_wlen: u8 = 0;
         // Read the file line by line using the lines() iterator from std::io::BufRead.
@@ -36,7 +34,10 @@ impl LanguageModel {
             let word_len: u8 = word.chars().count() as u8;
             max_wlen = max(word_len, max_wlen);
 
-            word_cost.insert(String::from(word), ((index + 1) as f64 * word_count.ln()).ln());
+            word_cost.insert(
+                String::from(word),
+                ((index + 1) as f64 * word_count.ln()).ln(),
+            );
         }
         //println!("{:#?}",word_cost);
         LanguageModel {
@@ -44,6 +45,7 @@ impl LanguageModel {
             max_wlen,
         }
     }
+
     pub fn split(&self, s: String) -> Vec<String> {
         //let mut result = vec![];
         let re = Regex::new(r"[^a-zA-Z0-9']+").unwrap();
@@ -66,7 +68,7 @@ impl LanguageModel {
         let mut cost: Vec<f64> = vec![0.0];
         for i in 1..s.len() + 1 {
             //println!("{:?}",i);
-            let (c, k) = self.best_match(i, &cost, &s);
+            let (_, k) = self.best_match(i, &cost, &s);
             //println!("best_match{:?}", self.best_match(i,&cost,&s));
             //println!("cost:{:?}",cost);
 
@@ -84,7 +86,7 @@ impl LanguageModel {
             let z: usize = 0;
             let outlen = out.len();
 
-            let idx = if (i - k as usize) < 0 {
+            let idx = if (i as i8 - k as i8) < 0 {
                 0
             } else {
                 i - k as usize
@@ -118,7 +120,7 @@ impl LanguageModel {
     }
 
     fn best_match(&self, i: usize, cost: &[f64], s: &String) -> (u8, f64) {
-        let mut candidates = &cost[(max(0, i as i64 - self.max_wlen as i64) as usize)..i];
+        let candidates = &cost[(max(0, i as i64 - self.max_wlen as i64) as usize)..i];
         let mut storedmin: (u8, f64) = (0, 9e99);
 
         for (index, &candidate) in candidates.into_iter().rev().enumerate() {
@@ -147,6 +149,15 @@ mod tests {
         let with_spaces = "the quick brown fox jumped over the lazy dog";
         let lm = LanguageModel::new();
         let correct: Vec<&str> = with_spaces.split_whitespace().collect();
+        assert_eq!(lm.split(no_spaces), correct);
+    }
+
+    #[test]
+    fn split_with_punctuation() {
+        let no_spaces = "thequick!brownfox.jumpedoverthe,lazydog?".to_string();
+        let with_spaces = "the quick brown fox jumped over the lazy dog";
+        let lm = LanguageModel::new();
+        let correct: Vec<&str>= with_spaces.split_whitespace().collect();
         assert_eq!(lm.split(no_spaces), correct);
     }
 }

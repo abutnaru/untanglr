@@ -3,8 +3,7 @@ use lib::LanguageModel;
 pub mod lib;
 
 fn main() {
-    let dict_path = include_str!("dicts/english.txt");
-    let lm = LanguageModel::new(dict_path);
+    let lm = LanguageModel::new();
     let mut input = String::new();
     let args: Vec<_> = env::args().collect();
 
