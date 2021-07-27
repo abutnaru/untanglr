@@ -67,10 +67,7 @@ impl LanguageModel {
     fn slice(&self, s: String) -> Vec<String> {
         let mut cost: Vec<f64> = vec![0.0];
         for i in 1..s.len() + 1 {
-            //println!("{:?}",i);
             let (_, k) = self.best_match(i, &cost, &s);
-            //println!("best_match{:?}", self.best_match(i,&cost,&s));
-            //println!("cost:{:?}",cost);
 
             cost.push(k);
         }
@@ -79,7 +76,6 @@ impl LanguageModel {
         let mut i = s.len();
         while i > 0 {
             let (k, c) = self.best_match(i, &cost, &s);
-            //println!("{:?} == {:?}", cost[i], c);
             assert!(c == cost[i]);
 
             let mut new_token = true;
@@ -105,17 +101,12 @@ impl LanguageModel {
                 }
             }
             if new_token {
-                //let idx2 = if (i as f64 - k) < 0.0 {0} else {i - k as usize};
-                //println!("s: {:?}",s);
-                //println!("selection: {:?}, {:?}", i-k as usize, i);
                 out.push(s[i - k as usize..i].to_string());
             }
 
-            //let idx3 = if (i as f64 - k) < 0.0 {0} else {i - k  as usize};
             i -= k as usize;
         }
         out.reverse();
-        //println!("out.rev: {:?}", out);
         out
     }
 
@@ -124,13 +115,11 @@ impl LanguageModel {
         let mut storedmin: (u8, f64) = (0, 9e99);
 
         for (index, &candidate) in candidates.into_iter().rev().enumerate() {
-            let current_word_cost = match self.word_cost.get(&s[i - index - 1..i]) {
+            let current_word_cost = match self.word_cost.get(&s[i - index - 1..i].to_ascii_lowercase()) {
                 Some(value) => value,
                 _ => &(9e99 as f64),
             };
-            //println!("CURRENT WORD: {:?}",&s[i - index - 1..i]);
-            //
-            //println!("i:{:?}, index:{:?}, wc:{:?}",i,index, current_word_cost);
+
             if candidate + current_word_cost < storedmin.1 {
                 storedmin.1 = candidate + *current_word_cost;
                 storedmin.0 = index as u8 + 1;
@@ -157,7 +146,7 @@ mod tests {
         let no_spaces = "thequick!brownfox.jumpedoverthe,lazydog?".to_string();
         let with_spaces = "the quick brown fox jumped over the lazy dog";
         let lm = LanguageModel::new();
-        let correct: Vec<&str>= with_spaces.split_whitespace().collect();
+        let correct: Vec<&str> = with_spaces.split_whitespace().collect();
         assert_eq!(lm.split(no_spaces), correct);
     }
 }
