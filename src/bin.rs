@@ -12,12 +12,12 @@ fn main() {
             .read_line(&mut input)
             .ok()
             .expect("Couldn't process input");
-        for word in lm.split(input) {
+        for word in lm.untangle(input) {
             print!("{} ", word);
         }
     } else if args.len() > 1 {
         for word_pile in &args[1..] {
-            for word in lm.split(String::from(word_pile)) {
+            for word in lm.untangle(String::from(word_pile)) {
                 print!("{} ", word);
             }
         }

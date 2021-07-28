@@ -7,7 +7,6 @@ use std::str;
 // The LanguageModel holds the path to the dictionary (english
 // by default), the maximum word cost and the maximum word length
 pub struct LanguageModel {
-    //TODO: Add support for custom dictionaries
     word_cost: HashMap<String, f64>,
     max_wlen: u8,
 }
@@ -16,19 +15,12 @@ impl LanguageModel {
     // Initialize the LanguageModel using the words in the dictionary to
     // get the maximum word length and calculate word cost uzing Zipf's law
     pub fn new() -> LanguageModel {
-        //TODO: This should be able to take user's input if needed
-        //let path = Path::new(&dict_path);
-        //let file = match File::open(&path) {
-        //    Err(e) => panic!("Couldn't open {}: {}", path.display(), e),
-        //    Ok(file) => file,
-        //};
-        //let buffered = BufReader::new(file);
-        //let reader: Vec<_> = buffered.lines().collect();
         let dict = include_str!("dicts/english.txt");
+
         let word_count: f64 = dict.len() as f64;
         let mut max_wlen: u8 = 0;
-        // Read the file line by line using the lines() iterator from std::io::BufRead.
         let mut word_cost: HashMap<String, f64> = HashMap::new();
+
         for (index, line) in dict.lines().enumerate() {
             let word = line; // Ignore errors.
             let word_len: u8 = word.chars().count() as u8;
@@ -39,14 +31,14 @@ impl LanguageModel {
                 ((index + 1) as f64 * word_count.ln()).ln(),
             );
         }
-        //println!("{:#?}",word_cost);
+
         LanguageModel {
             word_cost,
             max_wlen,
         }
     }
 
-    pub fn split(&self, s: String) -> Vec<String> {
+    pub fn untangle(&self, s: String) -> Vec<String> {
         //let mut result = vec![];
         let re = Regex::new(r"[^a-zA-Z0-9']+").unwrap();
         let mut result: Vec<String> = Vec::new();
@@ -56,19 +48,20 @@ impl LanguageModel {
                 Ok(s) => s,
                 Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
             };
-            //println!("{}", capture);
-            for s in self.slice(String::from(capture)) {
+
+            for s in self.split(String::from(capture)) {
                 &result.push(s);
             }
         }
+
         result
     }
 
-    fn slice(&self, s: String) -> Vec<String> {
+    fn split(&self, s: String) -> Vec<String> {
         let mut cost: Vec<f64> = vec![0.0];
+
         for i in 1..s.len() + 1 {
             let (_, k) = self.best_match(i, &cost, &s);
-
             cost.push(k);
         }
 
@@ -77,11 +70,9 @@ impl LanguageModel {
         while i > 0 {
             let (k, c) = self.best_match(i, &cost, &s);
             assert!(c == cost[i]);
-
             let mut new_token = true;
             let z: usize = 0;
             let outlen = out.len();
-
             let idx = if (i as i8 - k as i8) < 0 {
                 0
             } else {
@@ -100,10 +91,10 @@ impl LanguageModel {
                     }
                 }
             }
+
             if new_token {
                 out.push(s[i - k as usize..i].to_string());
             }
-
             i -= k as usize;
         }
         out.reverse();
@@ -115,16 +106,19 @@ impl LanguageModel {
         let mut storedmin: (u8, f64) = (0, 9e99);
 
         for (index, &candidate) in candidates.into_iter().rev().enumerate() {
-            let current_word_cost = match self.word_cost.get(&s[i - index - 1..i].to_ascii_lowercase()) {
+            let current_word_cost = match self
+                .word_cost
+                .get(&s[i - index - 1..i].to_ascii_lowercase())
+            {
                 Some(value) => value,
                 _ => &(9e99 as f64),
             };
-
             if candidate + current_word_cost < storedmin.1 {
                 storedmin.1 = candidate + *current_word_cost;
                 storedmin.0 = index as u8 + 1;
             }
         }
+
         storedmin
     }
 }
@@ -138,6 +132,7 @@ mod tests {
         let with_spaces = "the quick brown fox jumped over the lazy dog";
         let lm = LanguageModel::new();
         let correct: Vec<&str> = with_spaces.split_whitespace().collect();
+
         assert_eq!(lm.split(no_spaces), correct);
     }
 
@@ -147,6 +142,7 @@ mod tests {
         let with_spaces = "the quick brown fox jumped over the lazy dog";
         let lm = LanguageModel::new();
         let correct: Vec<&str> = with_spaces.split_whitespace().collect();
+
         assert_eq!(lm.split(no_spaces), correct);
     }
 }
