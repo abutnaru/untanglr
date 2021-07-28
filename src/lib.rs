@@ -39,17 +39,8 @@ impl LanguageModel {
     }
 
     pub fn untangle(&self, s: &str) -> Vec<String> {
-        //let mut result = vec![];
         let re = Regex::new(r"[^a-zA-Z0-9']+").unwrap();
-        let mut result: Vec<String> = Vec::new();
-
-        for c in re.split(s) {
-            for s in self.split(String::from(c)) {
-                result.push(s);
-            }
-        }
-
-        result
+        re.split(s).flat_map(|x| self.split(x.into())).collect()
     }
 
     fn split(&self, s: String) -> Vec<String> {
