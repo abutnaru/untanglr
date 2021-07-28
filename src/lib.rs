@@ -1,5 +1,5 @@
 extern crate regex;
-use regex::bytes::Regex;
+use regex::Regex;
 use std::cmp::max;
 use std::collections::HashMap;
 use std::str;
@@ -38,19 +38,14 @@ impl LanguageModel {
         }
     }
 
-    pub fn untangle(&self, s: String) -> Vec<String> {
+    pub fn untangle(&self, s: &str) -> Vec<String> {
         //let mut result = vec![];
         let re = Regex::new(r"[^a-zA-Z0-9']+").unwrap();
         let mut result: Vec<String> = Vec::new();
 
-        for c in re.split(s.as_bytes()) {
-            let capture = match str::from_utf8(c) {
-                Ok(s) => s,
-                Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
-            };
-
-            for s in self.split(String::from(capture)) {
-                &result.push(s);
+        for c in re.split(s) {
+            for s in self.split(String::from(c)) {
+                result.push(s);
             }
         }
 
