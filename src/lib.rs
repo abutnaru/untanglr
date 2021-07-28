@@ -87,7 +87,7 @@ impl LanguageModel {
         out
     }
 
-    fn best_match(&self, i: usize, cost: &[f64], s: &String) -> (u8, f64) {
+    fn best_match(&self, i: usize, cost: &[f64], s: &str) -> (u8, f64) {
         let candidates = &cost[(max(0, i as i64 - self.max_wlen as i64) as usize)..i];
         let mut storedmin: (u8, f64) = (0, 9e99);
 
