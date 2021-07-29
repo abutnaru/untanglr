@@ -38,14 +38,17 @@ impl LanguageModel {
         }
     }
 
+    // Split the input into alphanumerical substrings and feed the results
+    // into the internal splitter
     pub fn untangle(&self, s: &str) -> Vec<String> {
         let re = Regex::new(r"[^a-zA-Z0-9']+").unwrap();
         re.split(s).flat_map(|x| self.split(x.into())).collect()
     }
 
+    // Takes as input a string and returns a vector of the substrings that
+    // match the frequency dictionary
     fn split(&self, s: String) -> Vec<String> {
         let mut cost: Vec<f64> = vec![0.0];
-
         for i in 1..s.len() + 1 {
             let (_, k) = self.best_match(i, &cost, &s);
             cost.push(k);
@@ -114,21 +117,21 @@ mod tests {
     use super::*;
     #[test]
     fn basic_split() {
-        let no_spaces = "thequickbrownfoxjumpedoverthelazydog".to_string();
+        let no_spaces = "thequickbrownfoxjumpedoverthelazydog";
         let with_spaces = "the quick brown fox jumped over the lazy dog";
         let lm = LanguageModel::new();
         let correct: Vec<&str> = with_spaces.split_whitespace().collect();
 
-        assert_eq!(lm.split(no_spaces), correct);
+        assert_eq!(lm.untangle(no_spaces), correct);
     }
 
     #[test]
     fn split_with_punctuation() {
-        let no_spaces = "thequick!brownfox.jumpedoverthe,lazydog?".to_string();
+        let no_spaces = "thequick!brownfox.jumpedoverthe,lazydog?";
         let with_spaces = "the quick brown fox jumped over the lazy dog";
         let lm = LanguageModel::new();
         let correct: Vec<&str> = with_spaces.split_whitespace().collect();
 
-        assert_eq!(lm.split(no_spaces), correct);
+        assert_eq!(lm.untangle(no_spaces), correct);
     }
 }
