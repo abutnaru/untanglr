@@ -16,7 +16,7 @@ extern crate untanglr;
 
 fn main() {
 	let lm = untanglr::LanguageModel::new();
-	println!("{:?}", lm.untangle(String::from("helloworld")));
+	println!("{:?}", lm.untangle("helloworld"));
 }
 ```
 
