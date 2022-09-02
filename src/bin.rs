@@ -3,9 +3,10 @@ use lib::LanguageModel;
 pub mod lib;
 
 fn main() {
+    let args: Vec<_> = env::args().collect();
     let lm = LanguageModel::new();
     let mut input = String::new();
-    let args: Vec<_> = env::args().collect();
+    let mut sentence = String::new();
 
     if args.len() == 1 {
         io::stdin()
@@ -13,13 +14,16 @@ fn main() {
             .ok()
             .expect("Couldn't process input");
         for word in lm.untangle(&input) {
-            print!("{} ", word);
+            sentence.push_str(&format!("{word} "));
         }
+        print!("{}", sentence.trim_end());
     } else if args.len() > 1 {
         for word_pile in &args[1..] {
             for word in lm.untangle(word_pile) {
-                print!("{} ", word);
+                sentence.push_str(&format!("{word} "))
             }
+            print!("{}\n", sentence.trim_end());
+            sentence.clear();
         }
     }
 }
