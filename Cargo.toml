@@ -1,13 +1,13 @@
 [package]
 name = "untanglr"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["Andrei BUTNARU <abutnaru@outlook.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 description = """Probabilistically split concatenated words using NLP based \
 	on English Wikipedia unigram frequencies."""
 repository = "https://github.com/abutnaru/untanglr"
-keywords = ["string","split"]
+keywords = ["string", "split"]
 categories = ["text-processing"]
 
 [[bin]]
@@ -19,4 +19,4 @@ name = "untanglr"
 path = "src/lib.rs"
 
 [dependencies]
-regex = "1.5.4"
+regex = "1.6.0"
